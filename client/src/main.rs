@@ -1,3 +1,4 @@
+use borsh::{BorshDeserialize, BorshSchema, BorshSerialize};
 use clap::{
     app_from_crate, crate_authors, crate_description, crate_name, crate_version, Arg, SubCommand,
 };
@@ -11,7 +12,6 @@ use solana_sdk::signer::keypair::Keypair;
 #[allow(unused_imports)]
 use solana_sdk::signer::signers::Signers;
 use solana_sdk::transaction::Transaction;
-use borsh::{BorshDeserialize, BorshSchema, BorshSerialize};
 
 pub const PROGRAM_ID: &str = "4T7xMGLUSPhpnAou6TiZDB9XCDHgGx1u7hDbGWdXnfmG";
 
