@@ -40,13 +40,13 @@ pub fn pay_rent(
         invoke_signed(
             &system_instruction::allocate(&stake_data, size),
             &[accounts.stake_data_info.clone(), accounts.sys_info.clone()],
-            &[&[&accounts.mint.key.to_bytes(), &[stake_data_bump]]],
+            &[&[&accounts.mint.key.to_bytes(), &accounts.payer.key.to_bytes(), &[stake_data_bump]]],
         )?;
 
         invoke_signed(
             &system_instruction::assign(&stake_data, program_id),
             &[accounts.stake_data_info.clone(), accounts.sys_info.clone()],
-            &[&[&accounts.mint.key.to_bytes(), &[stake_data_bump]]],
+            &[&[&accounts.mint.key.to_bytes(), &accounts.payer.key.to_bytes(), &[stake_data_bump]]],
         )?;
     }
 
