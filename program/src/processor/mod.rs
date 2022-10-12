@@ -2,20 +2,20 @@ pub mod say_hello;
 
 use crate::error::ContractError;
 use crate::instruction::ExampleInstruction;
+use crate::processor::say_hello::say_hello;
+use borsh::BorshDeserialize;
 use solana_program::account_info::AccountInfo;
 use solana_program::entrypoint::ProgramResult;
 use solana_program::msg;
 use solana_program::pubkey::Pubkey;
-use crate::processor::say_hello::say_hello;
-use borsh::BorshDeserialize;
 
 /// Program state handler
 pub struct Processor {}
 
 impl Processor {
     pub fn process(
-        program_id: &Pubkey,
-        accounts: &[AccountInfo],
+        _program_id: &Pubkey,
+        _accounts: &[AccountInfo],
         instruction_data: &[u8],
     ) -> ProgramResult {
         let instruction: ExampleInstruction =
