@@ -1,5 +1,5 @@
 [package]
-name = "example_program"
+name = "staking_program"
 version = "0.1.0"
 edition = "2018"
 
@@ -16,11 +16,13 @@ num-traits = "0.2.15"
 thiserror = "1.0.31"
 borsh = "0.9.0"
 borsh-derive = "0.9.0"
+spl-token = { version = "3.2.0", features = [ "no-entrypoint" ] }
+spl-associated-token-account = {version = "1.0.3", features = [ "no-entrypoint" ]}
 
 [dev-dependencies]
 solana-program-test = "=1.9.0"
 solana-sdk = "=1.9.0"
 
 [lib]
-name = "example_program"
+name = "staking_program"
 crate-type = ["cdylib", "lib"]

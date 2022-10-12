@@ -1,4 +1,6 @@
 pub mod say_hello;
+pub mod generate_vault;
+pub mod staking;
 
 use crate::error::ContractError;
 use crate::instruction::ExampleInstruction;
@@ -8,14 +10,16 @@ use solana_program::account_info::AccountInfo;
 use solana_program::entrypoint::ProgramResult;
 use solana_program::msg;
 use solana_program::pubkey::Pubkey;
+use crate::processor::generate_vault::generate_vault;
+use crate::processor::staking::stake::stake;
 
 /// Program state handler
 pub struct Processor {}
 
 impl Processor {
     pub fn process(
-        _program_id: &Pubkey,
-        _accounts: &[AccountInfo],
+        program_id: &Pubkey,
+        accounts: &[AccountInfo],
         instruction_data: &[u8],
     ) -> ProgramResult {
         let instruction: ExampleInstruction =
@@ -29,6 +33,9 @@ impl Processor {
 
         match instruction {
             ExampleInstruction::SayHello => say_hello()?,
+            ExampleInstruction::GenerateVault => generate_vault(accounts, program_id)?,
+            ExampleInstruction::Stake {amount} => stake(accounts, program_id, amount)?,
+            ExampleInstruction::StakeNft => stake(accounts, program_id, 1)?,
             _ => {}
         };
 
