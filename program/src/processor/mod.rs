@@ -12,6 +12,7 @@ use solana_program::msg;
 use solana_program::pubkey::Pubkey;
 use crate::processor::generate_vault::generate_vault;
 use crate::processor::staking::stake::stake;
+use crate::processor::staking::unstake::unstake;
 
 /// Program state handler
 pub struct Processor {}
@@ -36,7 +37,7 @@ impl Processor {
             ExampleInstruction::GenerateVault => generate_vault(accounts, program_id)?,
             ExampleInstruction::Stake {amount} => stake(accounts, program_id, amount)?,
             ExampleInstruction::StakeNft => stake(accounts, program_id, 1)?,
-            _ => {}
+            ExampleInstruction::Unstake => unstake(accounts, program_id)?,
         };
 
         Ok(())

@@ -15,7 +15,6 @@ pub enum ExampleInstruction {
     },
     Unstake,
     StakeNft,
-    UnstakeNft,
 }
 
 #[derive(Clone, Debug, PartialEq, BorshDeserialize, BorshSerialize, BorshSchema)]
