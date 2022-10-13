@@ -3,7 +3,7 @@
 ## Program
 `cd program`
 > program/src
-- Source files for staking smart contract program
+- Source files for smart contract program
 
 ## Client
 `cd client`
@@ -15,7 +15,7 @@
 
 `make build`
 
-## Deploy
+## Build + Deploy
 
 `make deploy`
 
