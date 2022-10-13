@@ -1,16 +1,16 @@
 mod consts;
-mod transactions;
 mod structs;
+mod transactions;
 
-use clap::{
-    app_from_crate, crate_authors, crate_description, crate_name, crate_version, Arg, SubCommand,
-};
 use crate::transactions::generate_vault::generate_vault;
 use crate::transactions::say_hello::say_hello;
 use crate::transactions::stake::stake;
 use crate::transactions::stake_nft::stake_nft;
 use crate::transactions::unstake::unstake;
 use crate::transactions::unstake_nft::unstake_nft;
+use clap::{
+    app_from_crate, crate_authors, crate_description, crate_name, crate_version, Arg, SubCommand,
+};
 
 fn main() {
     let matches = app_from_crate!()

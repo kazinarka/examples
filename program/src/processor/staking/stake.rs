@@ -1,5 +1,6 @@
 use crate::consts::VAULT;
 use crate::error::ContractError;
+use crate::state::staking::{pay_rent, transfer_to_assoc, StakeData};
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::account_info::{next_account_info, AccountInfo};
 use solana_program::entrypoint::ProgramResult;
@@ -7,7 +8,6 @@ use solana_program::program_error::ProgramError;
 use solana_program::pubkey::Pubkey;
 use solana_program::rent::Rent;
 use solana_program::sysvar::Sysvar;
-use crate::state::staking::{pay_rent, StakeData, transfer_to_assoc};
 
 pub fn stake(accounts: &[AccountInfo], program_id: &Pubkey, amount: u64) -> ProgramResult {
     let accounts = Accounts::new(accounts)?;
@@ -18,8 +18,13 @@ pub fn stake(accounts: &[AccountInfo], program_id: &Pubkey, amount: u64) -> Prog
 
     let rent = &Rent::from_account_info(accounts.rent_info)?;
 
-    let (stake_data, stake_data_bump) =
-        Pubkey::find_program_address(&[&accounts.mint.key.to_bytes(), &accounts.payer.key.to_bytes()], program_id);
+    let (stake_data, stake_data_bump) = Pubkey::find_program_address(
+        &[
+            &accounts.mint.key.to_bytes(),
+            &accounts.payer.key.to_bytes(),
+        ],
+        program_id,
+    );
 
     if !accounts.payer.is_signer {
         return Err(ContractError::UnauthorisedAccess.into());
@@ -41,7 +46,7 @@ pub fn stake(accounts: &[AccountInfo], program_id: &Pubkey, amount: u64) -> Prog
     let stake_struct = StakeData {
         staker: *accounts.payer.key,
         mint: *accounts.mint.key,
-        amount: current_amount + amount
+        amount: current_amount + amount,
     };
     stake_struct.serialize(&mut &mut accounts.stake_data_info.data.borrow_mut()[..])?;
 

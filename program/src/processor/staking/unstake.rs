@@ -1,22 +1,31 @@
 use crate::consts::VAULT;
 use crate::error::ContractError;
+use crate::state::staking::StakeData;
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::account_info::{next_account_info, AccountInfo};
 use solana_program::entrypoint::ProgramResult;
 use solana_program::program::{invoke, invoke_signed};
 use solana_program::program_error::ProgramError;
 use solana_program::pubkey::Pubkey;
-use crate::state::staking::StakeData;
 
-pub fn unstake(accounts: &[AccountInfo], program_id: &Pubkey, is_nft_holder: bool) -> ProgramResult {
+pub fn unstake(
+    accounts: &[AccountInfo],
+    program_id: &Pubkey,
+    is_nft_holder: bool,
+) -> ProgramResult {
     let accounts = Accounts::new(accounts)?;
 
     if *accounts.token_program.key != spl_token::id() {
         return Err(ContractError::InvalidInstructionData.into());
     }
 
-    let (stake_data, _) =
-        Pubkey::find_program_address(&[&accounts.mint.key.to_bytes(), &accounts.payer.key.to_bytes()], program_id);
+    let (stake_data, _) = Pubkey::find_program_address(
+        &[
+            &accounts.mint.key.to_bytes(),
+            &accounts.payer.key.to_bytes(),
+        ],
+        program_id,
+    );
 
     if !accounts.payer.is_signer {
         return Err(ContractError::UnauthorisedAccess.into());

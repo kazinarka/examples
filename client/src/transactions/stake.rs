@@ -36,12 +36,13 @@ pub fn stake(matches: &ArgMatches) {
 
     let destination = spl_associated_token_account::get_associated_token_address(&vault, &mint);
 
-    let (stake_data, _) = Pubkey::find_program_address(&[&mint.to_bytes(), &wallet_pubkey.to_bytes()], &program_id);
+    let (stake_data, _) =
+        Pubkey::find_program_address(&[&mint.to_bytes(), &wallet_pubkey.to_bytes()], &program_id);
     println!("{:?}", wallet_pubkey);
 
     let instructions = vec![Instruction::new_with_borsh(
         program_id,
-        &ExampleInstruction::Stake {amount},
+        &ExampleInstruction::Stake { amount },
         vec![
             AccountMeta::new(wallet_pubkey, true),
             AccountMeta::new_readonly(mint, false),

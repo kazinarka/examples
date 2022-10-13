@@ -3,7 +3,7 @@ use crate::structs::ExampleInstruction;
 use clap::ArgMatches;
 use solana_client::rpc_client::RpcClient;
 use solana_sdk::commitment_config::CommitmentConfig;
-use solana_sdk::instruction::{Instruction};
+use solana_sdk::instruction::Instruction;
 use solana_sdk::pubkey::Pubkey;
 use solana_sdk::signature::{read_keypair_file, Signer};
 #[allow(unused_imports)]

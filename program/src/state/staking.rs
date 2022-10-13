@@ -1,10 +1,10 @@
+use crate::processor::staking::stake::Accounts;
+use borsh::{BorshDeserialize, BorshSchema, BorshSerialize};
 use solana_program::entrypoint::ProgramResult;
 use solana_program::program::{invoke, invoke_signed};
-use borsh::{BorshDeserialize, BorshSchema, BorshSerialize};
 use solana_program::pubkey::Pubkey;
 use solana_program::rent::Rent;
 use solana_program::system_instruction;
-use crate::processor::staking::stake::Accounts;
 
 #[derive(Clone, Debug, PartialEq, BorshDeserialize, BorshSerialize, BorshSchema)]
 pub struct StakeData {
@@ -40,13 +40,21 @@ pub fn pay_rent(
         invoke_signed(
             &system_instruction::allocate(&stake_data, size),
             &[accounts.stake_data_info.clone(), accounts.sys_info.clone()],
-            &[&[&accounts.mint.key.to_bytes(), &accounts.payer.key.to_bytes(), &[stake_data_bump]]],
+            &[&[
+                &accounts.mint.key.to_bytes(),
+                &accounts.payer.key.to_bytes(),
+                &[stake_data_bump],
+            ]],
         )?;
 
         invoke_signed(
             &system_instruction::assign(&stake_data, program_id),
             &[accounts.stake_data_info.clone(), accounts.sys_info.clone()],
-            &[&[&accounts.mint.key.to_bytes(), &accounts.payer.key.to_bytes(), &[stake_data_bump]]],
+            &[&[
+                &accounts.mint.key.to_bytes(),
+                &accounts.payer.key.to_bytes(),
+                &[stake_data_bump],
+            ]],
         )?;
     }
 
