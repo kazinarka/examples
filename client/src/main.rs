@@ -9,6 +9,8 @@ use crate::transactions::generate_vault::generate_vault;
 use crate::transactions::say_hello::say_hello;
 use crate::transactions::stake::stake;
 use crate::transactions::stake_nft::stake_nft;
+use crate::transactions::unstake::unstake;
+use crate::transactions::unstake_nft::unstake_nft;
 
 fn main() {
     let matches = app_from_crate!()
@@ -101,6 +103,54 @@ fn main() {
                         .takes_value(true),
                 ),
         )
+        .subcommand(
+            SubCommand::with_name("unstake")
+                .arg(
+                    Arg::with_name("sign")
+                        .short("s")
+                        .long("sign")
+                        .required(true)
+                        .takes_value(true),
+                )
+                .arg(
+                    Arg::with_name("env")
+                        .short("e")
+                        .long("env")
+                        .required(false)
+                        .takes_value(true),
+                )
+                .arg(
+                    Arg::with_name("mint")
+                        .short("m")
+                        .long("mint")
+                        .required(true)
+                        .takes_value(true),
+                ),
+        )
+        .subcommand(
+            SubCommand::with_name("unstake_nft")
+                .arg(
+                    Arg::with_name("sign")
+                        .short("s")
+                        .long("sign")
+                        .required(true)
+                        .takes_value(true),
+                )
+                .arg(
+                    Arg::with_name("env")
+                        .short("e")
+                        .long("env")
+                        .required(false)
+                        .takes_value(true),
+                )
+                .arg(
+                    Arg::with_name("nft")
+                        .short("n")
+                        .long("nft")
+                        .required(true)
+                        .takes_value(true),
+                ),
+        )
         .get_matches();
 
     if let Some(matches) = matches.subcommand_matches("say_hello") {
@@ -117,5 +167,13 @@ fn main() {
 
     if let Some(matches) = matches.subcommand_matches("stake_nft") {
         stake_nft(matches);
+    }
+
+    if let Some(matches) = matches.subcommand_matches("unstake") {
+        unstake(matches);
+    }
+
+    if let Some(matches) = matches.subcommand_matches("unstake_nft") {
+        unstake_nft(matches);
     }
 }

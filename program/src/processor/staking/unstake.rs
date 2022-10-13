@@ -8,7 +8,7 @@ use solana_program::program_error::ProgramError;
 use solana_program::pubkey::Pubkey;
 use crate::state::staking::StakeData;
 
-pub fn unstake(accounts: &[AccountInfo], program_id: &Pubkey) -> ProgramResult {
+pub fn unstake(accounts: &[AccountInfo], program_id: &Pubkey, is_nft_holder: bool) -> ProgramResult {
     let accounts = Accounts::new(accounts)?;
 
     if *accounts.token_program.key != spl_token::id() {
@@ -93,22 +93,25 @@ pub fn unstake(accounts: &[AccountInfo], program_id: &Pubkey) -> ProgramResult {
         &[&[VAULT, &[vault_bump]]],
     )?;
 
-    invoke_signed(
-        &spl_token::instruction::close_account(
-            accounts.token_program.key,
-            accounts.source.key,
-            accounts.payer.key,
-            accounts.vault_info.key,
-            &[],
-        )?,
-        &[
-            accounts.source.clone(),
-            accounts.payer.clone(),
-            accounts.vault_info.clone(),
-            accounts.token_program.clone(),
-        ],
-        &[&[VAULT, &[vault_bump]]],
-    )?;
+    // TODO check the balance of account before closing && remove if
+    if is_nft_holder {
+        invoke_signed(
+            &spl_token::instruction::close_account(
+                accounts.token_program.key,
+                accounts.source.key,
+                accounts.payer.key,
+                accounts.vault_info.key,
+                &[],
+            )?,
+            &[
+                accounts.source.clone(),
+                accounts.payer.clone(),
+                accounts.vault_info.clone(),
+                accounts.token_program.clone(),
+            ],
+            &[&[VAULT, &[vault_bump]]],
+        )?;
+    }
 
     stake_data.amount = 0;
     stake_data.serialize(&mut &mut accounts.stake_data_info.data.borrow_mut()[..])?;

@@ -11,6 +11,7 @@ pub enum ExampleInstruction {
     },
     Unstake,
     StakeNft,
+    UnstakeNft,
 }
 
 impl ExampleInstruction {}

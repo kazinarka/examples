@@ -37,7 +37,8 @@ impl Processor {
             ExampleInstruction::GenerateVault => generate_vault(accounts, program_id)?,
             ExampleInstruction::Stake {amount} => stake(accounts, program_id, amount)?,
             ExampleInstruction::StakeNft => stake(accounts, program_id, 1)?,
-            ExampleInstruction::Unstake => unstake(accounts, program_id)?,
+            ExampleInstruction::Unstake => unstake(accounts, program_id, false)?,
+            ExampleInstruction::UnstakeNft => unstake(accounts, program_id, true)?,
         };
 
         Ok(())
