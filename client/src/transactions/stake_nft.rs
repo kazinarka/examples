@@ -28,7 +28,7 @@ pub fn stake_nft(matches: &ArgMatches) {
 
     let nft = matches.value_of("nft").unwrap().parse::<Pubkey>().unwrap();
 
-    let (vault, _vault_bump) = Pubkey::find_program_address(&[VAULT], &program_id);
+    let (vault, _) = Pubkey::find_program_address(&[VAULT], &program_id);
 
     let source = spl_associated_token_account::get_associated_token_address(&wallet_pubkey, &nft);
 

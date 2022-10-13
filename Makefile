@@ -13,4 +13,19 @@ deploy:
 	sh deploy.sh
 
 say_hello:
-	cd client; cargo run -- say_hello -e dev -s /home/ideasoft/.config/solana/id.json
+	cd client; cargo run -- say_hello -e dev -s /path/to/id.json
+
+generate_vault:
+	cd client; cargo run -- generate_vault -e dev -s /path/to/id.json
+
+stake:
+	cd client; cargo run -- stake -e dev -s /path/to/id.json -m [token_mint_address] -a [amount]
+
+unstake:
+	cd client; cargo run -- unstake -e dev -s /path/to/id.json -m [token_mint_address]
+
+stake_nft:
+	cd client; cargo run -- stake_nft -e dev -s /path/to/id.json -n [mint_nft_address]
+
+unstake_nft:
+	cd client; cargo run -- unstake_nft -e dev -s /path/to/id.json -n [mint_nft_address]

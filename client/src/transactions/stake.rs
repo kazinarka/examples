@@ -30,7 +30,7 @@ pub fn stake(matches: &ArgMatches) {
 
     let amount = matches.value_of("amount").unwrap().parse::<u64>().unwrap();
 
-    let (vault, _vault_bump) = Pubkey::find_program_address(&[VAULT], &program_id);
+    let (vault, _) = Pubkey::find_program_address(&[VAULT], &program_id);
 
     let source = spl_associated_token_account::get_associated_token_address(&wallet_pubkey, &mint);
 

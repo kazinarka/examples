@@ -26,9 +26,9 @@ pub fn unstake_nft(matches: &ArgMatches) {
     let wallet_keypair = read_keypair_file(wallet_path).expect("Can't open file-wallet");
     let wallet_pubkey = wallet_keypair.pubkey();
 
-    let mint = matches.value_of("mint").unwrap().parse::<Pubkey>().unwrap();
+    let mint = matches.value_of("nft").unwrap().parse::<Pubkey>().unwrap();
 
-    let (vault, _vault_bump) = Pubkey::find_program_address(&[VAULT], &program_id);
+    let (vault, _) = Pubkey::find_program_address(&[VAULT], &program_id);
 
     let destination = spl_associated_token_account::get_associated_token_address(&wallet_pubkey, &mint);
 

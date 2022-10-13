@@ -28,7 +28,7 @@ pub fn unstake(matches: &ArgMatches) {
 
     let mint = matches.value_of("mint").unwrap().parse::<Pubkey>().unwrap();
 
-    let (vault, _vault_bump) = Pubkey::find_program_address(&[VAULT], &program_id);
+    let (vault, _p) = Pubkey::find_program_address(&[VAULT], &program_id);
 
     let destination = spl_associated_token_account::get_associated_token_address(&wallet_pubkey, &mint);
 
