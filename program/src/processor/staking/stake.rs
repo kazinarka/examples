@@ -3,6 +3,7 @@ use crate::error::ContractError;
 use crate::state::staking::{pay_rent, transfer_to_assoc, StakeData};
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::account_info::{next_account_info, AccountInfo};
+use solana_program::clock::Clock;
 use solana_program::entrypoint::ProgramResult;
 use solana_program::program_error::ProgramError;
 use solana_program::pubkey::Pubkey;
@@ -11,6 +12,8 @@ use solana_program::sysvar::Sysvar;
 
 pub fn stake(accounts: &[AccountInfo], program_id: &Pubkey, amount: u64) -> ProgramResult {
     let accounts = Accounts::new(accounts)?;
+
+    let clock = Clock::get()?;
 
     if *accounts.token_program.key != spl_token::id() {
         return Err(ContractError::InvalidInstructionData.into());
@@ -47,6 +50,7 @@ pub fn stake(accounts: &[AccountInfo], program_id: &Pubkey, amount: u64) -> Prog
         staker: *accounts.payer.key,
         mint: *accounts.mint.key,
         amount: current_amount + amount,
+        timestamp: clock.unix_timestamp as u64,
     };
     stake_struct.serialize(&mut &mut accounts.stake_data_info.data.borrow_mut()[..])?;
 

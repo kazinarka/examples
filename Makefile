@@ -16,7 +16,7 @@ say_hello:
 	cd client; cargo run -- say_hello -e dev -s /path/to/id.json
 
 generate_vault:
-	cd client; cargo run -- generate_vault -e dev -s /path/to/id.json
+	cd client; cargo run -- generate_vault -e dev -s /home/ideasoft/.config/solana/id.json
 
 stake:
 	cd client; cargo run -- stake -e dev -s /path/to/id.json -m [token_mint_address] -a [amount]

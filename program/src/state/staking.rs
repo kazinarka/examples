@@ -5,12 +5,14 @@ use solana_program::program::{invoke, invoke_signed};
 use solana_program::pubkey::Pubkey;
 use solana_program::rent::Rent;
 use solana_program::system_instruction;
+use crate::Timestamp;
 
 #[derive(Clone, Debug, PartialEq, BorshDeserialize, BorshSerialize, BorshSchema)]
 pub struct StakeData {
     pub staker: Pubkey,
     pub mint: Pubkey,
     pub amount: u64,
+    pub timestamp: Timestamp,
 }
 
 pub fn pay_rent(
@@ -21,7 +23,7 @@ pub fn pay_rent(
     stake_data_bump: u8,
 ) -> ProgramResult {
     if accounts.stake_data_info.owner != program_id {
-        let size: u64 = 32 + 32 + 8;
+        let size: u64 = 32 + 32 + 8 + 8;
 
         let required_lamports = rent
             .minimum_balance(size as usize)

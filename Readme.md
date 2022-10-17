@@ -10,7 +10,9 @@
 - Simple service to call SC instructions via command line
 
 # Setup + Commands
-
+841CvePrxcKuosQWUJqhvWGhCiBkuiencrWjzciKPEma
+9mehi9c6aoHWWWGhmcYFtHiMUPf8v2RNt3MrYeZVxBeT
+spl-token transfer 841CvePrxcKuosQWUJqhvWGhCiBkuiencrWjzciKPEma 1000000 9mehi9c6aoHWWWGhmcYFtHiMUPf8v2RNt3MrYeZVxBeT --fund-recipient
 ## Create token
 
 - NOTE: Only have to do this in development. In production, token should already exist and you just have to use it.
