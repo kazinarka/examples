@@ -29,7 +29,6 @@ impl Processor {
 
         match instruction {
             ExampleInstruction::SayHello => say_hello()?,
-            _ => {}
         };
 
         Ok(())

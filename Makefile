@@ -7,10 +7,15 @@ fmt:
 lint:
 	cd program; cargo clippy --all && cargo fix --tests --all-features --allow-dirty
 
-pre-commit: build fmt lint
+test-say-hello:
+	cd program; cargo test-bpf --test say_hello
+
+test: test-say-hello
+
+pre-commit: build fmt lint test
 
 deploy:
 	sh deploy.sh
 
 say_hello:
-	cd client; cargo run -- say_hello -e dev -s /path/to/id.json
+	cd client; cargo run -- say_hello -e dev -s /home/ideasoft/.config/solana/id.json
