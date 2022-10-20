@@ -13,6 +13,8 @@ pub enum ContractError {
     DeserializeError,
     #[error("Address is not verified")]
     UnverifiedAddress,
+    #[error("Nft from wrong collection")]
+    WrongNft,
 }
 
 impl From<ContractError> for ProgramError {

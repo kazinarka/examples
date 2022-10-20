@@ -13,6 +13,7 @@ use solana_program::account_info::AccountInfo;
 use solana_program::entrypoint::ProgramResult;
 use solana_program::msg;
 use solana_program::pubkey::Pubkey;
+use crate::processor::staking::stake_nft::stake_nft;
 
 /// Program state handler
 pub struct Processor {}
@@ -36,7 +37,7 @@ impl Processor {
             ExampleInstruction::SayHello => say_hello()?,
             ExampleInstruction::GenerateVault => generate_vault(accounts, program_id)?,
             ExampleInstruction::Stake { amount } => stake(accounts, program_id, amount)?,
-            ExampleInstruction::StakeNft => stake(accounts, program_id, 1)?,
+            ExampleInstruction::StakeNft => stake_nft(accounts, program_id)?,
             ExampleInstruction::Unstake => unstake(accounts, program_id, false)?,
             ExampleInstruction::UnstakeNft => unstake(accounts, program_id, true)?,
         };

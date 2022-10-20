@@ -28,6 +28,15 @@ pub fn stake_nft(matches: &ArgMatches) {
 
     let nft = matches.value_of("nft").unwrap().parse::<Pubkey>().unwrap();
 
+    let (metadata, _) = Pubkey::find_program_address(
+        &[
+            "metadata".as_bytes(),
+            &spl_token_metadata::ID.to_bytes(),
+            &nft.to_bytes(),
+        ],
+        &spl_token_metadata::ID,
+    );
+
     let (vault, _) = Pubkey::find_program_address(&[VAULT], &program_id);
 
     let source = spl_associated_token_account::get_associated_token_address(&wallet_pubkey, &nft);
@@ -35,7 +44,7 @@ pub fn stake_nft(matches: &ArgMatches) {
     let destination = spl_associated_token_account::get_associated_token_address(&vault, &nft);
 
     let (stake_data, _) =
-        Pubkey::find_program_address(&[&nft.to_bytes(), &wallet_pubkey.to_bytes()], &program_id);
+        Pubkey::find_program_address(&[&nft.to_bytes()], &program_id);
     println!("{:?}", wallet_pubkey);
 
     let instructions = vec![Instruction::new_with_borsh(
@@ -44,6 +53,7 @@ pub fn stake_nft(matches: &ArgMatches) {
         vec![
             AccountMeta::new(wallet_pubkey, true),
             AccountMeta::new_readonly(nft, false),
+            AccountMeta::new_readonly(metadata, false),
             AccountMeta::new_readonly(vault, false),
             AccountMeta::new(source, false),
             AccountMeta::new(destination, false),
