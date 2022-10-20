@@ -1,11 +1,11 @@
 use crate::processor::staking::stake::Accounts;
+use crate::Timestamp;
 use borsh::{BorshDeserialize, BorshSchema, BorshSerialize};
 use solana_program::entrypoint::ProgramResult;
 use solana_program::program::{invoke, invoke_signed};
 use solana_program::pubkey::Pubkey;
 use solana_program::rent::Rent;
 use solana_program::system_instruction;
-use crate::Timestamp;
 
 #[derive(Clone, Debug, PartialEq, BorshDeserialize, BorshSerialize, BorshSchema)]
 pub struct StakeData {

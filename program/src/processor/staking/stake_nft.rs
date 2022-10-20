@@ -1,8 +1,8 @@
-use crate::consts::{SYMBOL, VAULT, WHITELIST};
+use crate::consts::{SYMBOL, VAULT};
 use crate::error::ContractError;
-use crate::state::stake::{check_metadata_account, pay_rent, transfer_nft_to_assoc};
-use crate::state::structs::StakeData;
-use borsh::{BorshDeserialize, BorshSerialize};
+use crate::state::nft_staking::{check_metadata_account, pay_rent, transfer_nft_to_assoc};
+use crate::state::staking::StakeData;
+use borsh::BorshSerialize;
 use solana_program::account_info::{next_account_info, AccountInfo};
 use solana_program::clock::Clock;
 use solana_program::entrypoint::ProgramResult;
@@ -10,8 +10,6 @@ use solana_program::program_error::ProgramError;
 use solana_program::pubkey::Pubkey;
 use solana_program::rent::Rent;
 use solana_program::sysvar::Sysvar;
-use crate::state::nft_staking::{check_metadata_account, pay_rent, transfer_nft_to_assoc};
-use crate::state::staking::StakeData;
 
 pub fn stake_nft(accounts: &[AccountInfo], program_id: &Pubkey) -> ProgramResult {
     let accounts = Accounts::new(accounts)?;
@@ -41,7 +39,7 @@ pub fn stake_nft(accounts: &[AccountInfo], program_id: &Pubkey) -> ProgramResult
         timestamp: clock.unix_timestamp as u64,
         staker: *accounts.payer.key,
         mint: *accounts.mint.key,
-        amount: 1
+        amount: 1,
     };
     stake_struct.serialize(&mut &mut accounts.stake_data_info.data.borrow_mut()[..])?;
 

@@ -43,8 +43,7 @@ pub fn stake_nft(matches: &ArgMatches) {
 
     let destination = spl_associated_token_account::get_associated_token_address(&vault, &nft);
 
-    let (stake_data, _) =
-        Pubkey::find_program_address(&[&nft.to_bytes()], &program_id);
+    let (stake_data, _) = Pubkey::find_program_address(&[&nft.to_bytes()], &program_id);
     println!("{:?}", wallet_pubkey);
 
     let instructions = vec![Instruction::new_with_borsh(

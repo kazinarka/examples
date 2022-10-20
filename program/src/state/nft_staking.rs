@@ -1,11 +1,11 @@
+use crate::error::ContractError;
+use crate::processor::staking::stake_nft::Accounts;
 use solana_program::account_info::AccountInfo;
 use solana_program::entrypoint::ProgramResult;
 use solana_program::program::{invoke, invoke_signed};
 use solana_program::pubkey::Pubkey;
 use solana_program::rent::Rent;
 use solana_program::system_instruction;
-use crate::error::ContractError;
-use crate::processor::staking::stake_nft::Accounts;
 
 pub fn pay_rent(
     accounts: &Accounts,
@@ -34,19 +34,13 @@ pub fn pay_rent(
         invoke_signed(
             &system_instruction::allocate(&stake_data, size),
             &[accounts.stake_data_info.clone(), accounts.sys_info.clone()],
-            &[&[
-                &accounts.mint.key.to_bytes(),
-                &[stake_data_bump],
-            ]],
+            &[&[&accounts.mint.key.to_bytes(), &[stake_data_bump]]],
         )?;
 
         invoke_signed(
             &system_instruction::assign(&stake_data, program_id),
             &[accounts.stake_data_info.clone(), accounts.sys_info.clone()],
-            &[&[
-                &accounts.mint.key.to_bytes(),
-                &[stake_data_bump],
-            ]],
+            &[&[&accounts.mint.key.to_bytes(), &[stake_data_bump]]],
         )?;
     }
 
@@ -106,7 +100,7 @@ pub fn check_metadata_account(
         ],
         &spl_token_metadata::ID,
     )
-        .0 != metadata_account_info.key
+    .0 != metadata_account_info.key
     {
         return Err(ContractError::InvalidInstructionData.into());
     }

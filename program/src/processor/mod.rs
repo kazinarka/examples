@@ -7,13 +7,13 @@ use crate::instruction::ExampleInstruction;
 use crate::processor::generate_vault::generate_vault;
 use crate::processor::say_hello::say_hello;
 use crate::processor::staking::stake::stake;
+use crate::processor::staking::stake_nft::stake_nft;
 use crate::processor::staking::unstake::unstake;
 use borsh::BorshDeserialize;
 use solana_program::account_info::AccountInfo;
 use solana_program::entrypoint::ProgramResult;
 use solana_program::msg;
 use solana_program::pubkey::Pubkey;
-use crate::processor::staking::stake_nft::stake_nft;
 
 /// Program state handler
 pub struct Processor {}
