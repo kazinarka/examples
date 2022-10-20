@@ -1,8 +1,9 @@
-use crate::consts::VAULT;
+use crate::consts::{REWARD_TIME, VAULT};
 use crate::error::ContractError;
 use crate::state::staking::StakeData;
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::account_info::{next_account_info, AccountInfo};
+use solana_program::clock::Clock;
 use solana_program::entrypoint::ProgramResult;
 use solana_program::program::{invoke, invoke_signed};
 use solana_program::program_error::ProgramError;
@@ -14,6 +15,8 @@ pub fn unstake(
     is_nft_holder: bool,
 ) -> ProgramResult {
     let accounts = Accounts::new(accounts)?;
+
+    let clock = Clock.get()?;
 
     if *accounts.token_program.key != spl_token::id() {
         return Err(ContractError::InvalidInstructionData.into());
@@ -120,6 +123,10 @@ pub fn unstake(
             ],
             &[&[VAULT, &[vault_bump]]],
         )?;
+    }
+
+    if ((clock.unix_timestamp as u64) - stake_data.timestamp) > REWARD_TIME {
+        // TODO mint and transfer nft
     }
 
     stake_data.amount = 0;
