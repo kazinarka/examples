@@ -3,7 +3,6 @@ mod structs;
 mod transactions;
 
 use crate::transactions::generate_vault::generate_vault;
-use crate::transactions::say_hello::say_hello;
 use crate::transactions::stake::stake;
 use crate::transactions::stake_nft::stake_nft;
 use crate::transactions::unstake::unstake;
@@ -14,23 +13,6 @@ use clap::{
 
 fn main() {
     let matches = app_from_crate!()
-        .subcommand(
-            SubCommand::with_name("say_hello")
-                .arg(
-                    Arg::with_name("sign")
-                        .short("s")
-                        .long("sign")
-                        .required(true)
-                        .takes_value(true),
-                )
-                .arg(
-                    Arg::with_name("env")
-                        .short("e")
-                        .long("env")
-                        .required(false)
-                        .takes_value(true),
-                ),
-        )
         .subcommand(
             SubCommand::with_name("generate_vault")
                 .arg(
@@ -152,10 +134,6 @@ fn main() {
                 ),
         )
         .get_matches();
-
-    if let Some(matches) = matches.subcommand_matches("say_hello") {
-        say_hello(matches);
-    }
 
     if let Some(matches) = matches.subcommand_matches("generate_vault") {
         generate_vault(matches);

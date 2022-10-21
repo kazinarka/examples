@@ -1,5 +1,4 @@
 pub mod generate_vault;
-pub mod say_hello;
 pub mod staking;
 
 use crate::error::ContractError;
@@ -34,7 +33,6 @@ impl Processor {
             };
 
         match instruction {
-            ExampleInstruction::SayHello => say_hello()?,
             ExampleInstruction::GenerateVault => generate_vault(accounts, program_id)?,
             ExampleInstruction::Stake { amount } => stake(accounts, program_id, amount)?,
             ExampleInstruction::StakeNft => stake_nft(accounts, program_id)?,
