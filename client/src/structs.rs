@@ -5,6 +5,8 @@ use solana_sdk::signer::keypair::Keypair;
 #[allow(unused_imports)]
 use solana_sdk::signer::signers::Signers;
 
+pub type Timestamp = u64;
+
 #[derive(Clone, Debug, PartialEq, BorshDeserialize, BorshSerialize, BorshSchema)]
 pub enum ExampleInstruction {
     SayHello,
@@ -14,7 +16,11 @@ pub enum ExampleInstruction {
         #[allow(dead_code)]
         amount: u64,
     },
-    Unstake,
+    Unstake {
+        ///  Flag whether close the account
+        #[allow(dead_code)]
+        close_account: bool,
+    },
     StakeNft,
     UnstakeNft,
 }
@@ -24,4 +30,5 @@ pub struct StakeData {
     pub staker: Pubkey,
     pub mint: Pubkey,
     pub amount: u64,
+    pub timestamp: Timestamp,
 }

@@ -5,13 +5,16 @@ pub enum ExampleInstruction {
     SayHello,
     GenerateVault,
     Stake {
-        /// amount of tokens to stake
+        /// Amount of tokens to stake
         #[allow(dead_code)]
         amount: u64,
     },
-    Unstake,
+    Unstake {
+        ///  Flag whether close the account
+        #[allow(dead_code)]
+        close: bool,
+    },
     StakeNft,
-    UnstakeNft,
 }
 
 impl ExampleInstruction {}
