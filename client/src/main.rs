@@ -1,3 +1,5 @@
+extern crate core;
+
 mod consts;
 mod structs;
 mod transactions;

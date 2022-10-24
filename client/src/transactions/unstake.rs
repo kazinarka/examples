@@ -1,5 +1,4 @@
-use crate::consts::{ASSOCIATED_TOKEN, PROGRAM_ID, RENT, VAULT};
-use crate::structs::ExampleInstruction;
+use borsh::BorshDeserialize;
 use clap::ArgMatches;
 use solana_client::rpc_client::RpcClient;
 use solana_sdk::commitment_config::CommitmentConfig;
@@ -12,6 +11,9 @@ use solana_sdk::signer::keypair::Keypair;
 use solana_sdk::signer::signers::Signers;
 use solana_sdk::system_program;
 use solana_sdk::transaction::Transaction;
+
+use crate::consts::{ASSOCIATED_TOKEN, PROGRAM_ID, RENT, VAULT};
+use crate::structs::{ExampleInstruction, StakeData};
 
 pub fn unstake(matches: &ArgMatches) {
     let program_id = PROGRAM_ID.parse::<Pubkey>().unwrap();
@@ -39,9 +41,26 @@ pub fn unstake(matches: &ArgMatches) {
         Pubkey::find_program_address(&[&mint.to_bytes(), &wallet_pubkey.to_bytes()], &program_id);
     println!("{:?}", wallet_pubkey);
 
+    let close =
+        {
+            let token_balance = client.get_token_account_balance(&source)
+                .expect("Fail to get account balance.");
+            let token_balance = token_balance.amount.parse::<u64>().expect("Fail to parse balance.");
+
+            let data = client.get_account_data(&stake_data).expect("Fail to get account data.");
+
+            let stake_data: StakeData = match StakeData::try_from_slice(data.as_slice())
+            {
+                Ok(data) => data,
+                Err(err) => panic!("{:?}", err),
+            };
+            token_balance == stake_data.amount
+        };
+
+
     let instructions = vec![Instruction::new_with_borsh(
         program_id,
-        &ExampleInstruction::Unstake,
+        &ExampleInstruction::Unstake { close_account: close },
         vec![
             AccountMeta::new(wallet_pubkey, true),
             AccountMeta::new_readonly(mint, false),
