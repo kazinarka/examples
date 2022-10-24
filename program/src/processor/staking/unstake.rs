@@ -11,8 +11,7 @@ use solana_program::pubkey::Pubkey;
 pub fn unstake(
     accounts: &[AccountInfo],
     program_id: &Pubkey,
-    is_nft_holder: bool,
-    close_account: bool,
+    close: bool,
 ) -> ProgramResult {
     let accounts = Accounts::new(accounts)?;
 
@@ -103,7 +102,7 @@ pub fn unstake(
         &[&[VAULT, &[vault_bump]]],
     )?;
 
-    if is_nft_holder || close_account {
+    if close  {
         invoke_signed(
             &spl_token::instruction::close_account(
                 accounts.token_program.key,

@@ -15,7 +15,6 @@ pub enum ExampleInstruction {
         close: bool,
     },
     StakeNft,
-    UnstakeNft,
 }
 
 impl ExampleInstruction {}
