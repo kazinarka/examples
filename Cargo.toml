@@ -1,5 +1,5 @@
 [workspace]
 members = [
-    "program",
+    "programs/reward_pool",
     "client",
 ]

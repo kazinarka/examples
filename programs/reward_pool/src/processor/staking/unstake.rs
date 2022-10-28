@@ -1,4 +1,4 @@
-use crate::consts::{REWARD_TIME, VAULT};
+use crate::consts::{REWARD_TIME, SYMBOL, VAULT};
 use crate::error::ContractError;
 use crate::state::staking::StakeData;
 use borsh::{BorshDeserialize, BorshSerialize};
@@ -7,16 +7,24 @@ use solana_program::clock::Clock;
 use solana_program::entrypoint::ProgramResult;
 use solana_program::program::{invoke, invoke_signed};
 use solana_program::program_error::ProgramError;
+use solana_program::program_pack::Pack;
 use solana_program::pubkey::Pubkey;
+use solana_program::rent::Rent;
+use solana_program::sysvar::Sysvar;
+use spl_token::state;
+use spl_token::state::Mint;
+use spl_token_metadata::instruction::{create_master_edition, create_metadata_accounts};
 
 pub fn unstake(
     accounts: &[AccountInfo],
     program_id: &Pubkey,
-    is_nft_holder: bool,
+    is_closable: bool,
 ) -> ProgramResult {
     let accounts = Accounts::new(accounts)?;
 
-    let clock = Clock.get()?;
+    let clock = Clock::get()?;
+
+    let rent = &Rent::from_account_info(accounts.rent)?;
 
     if *accounts.token_program.key != spl_token::id() {
         return Err(ContractError::InvalidInstructionData.into());
@@ -105,8 +113,7 @@ pub fn unstake(
         &[&[VAULT, &[vault_bump]]],
     )?;
 
-    // TODO check the balance of account before closing && remove if
-    if is_nft_holder {
+    if is_closable {
         invoke_signed(
             &spl_token::instruction::close_account(
                 accounts.token_program.key,
@@ -126,7 +133,106 @@ pub fn unstake(
     }
 
     if ((clock.unix_timestamp as u64) - stake_data.timestamp) > REWARD_TIME {
-        // TODO mint and transfer nft
+        invoke(
+            &spl_token::instruction::initialize_mint(
+                accounts.token_program.key,
+                accounts.nft_mint.key,
+                accounts.payer.key,
+                None,
+                0,
+            )?,
+            &[
+                accounts.nft_mint.clone(),
+                accounts.rent.clone(),
+            ]
+        )?;
+
+        invoke(
+            &spl_token::instruction::initialize_account2(
+                accounts.token_program.key,
+                accounts.token_account.key,
+                accounts.nft_mint.key,
+                accounts.payer.key,
+            )?,
+            &[
+                accounts.token_account.clone(),
+                accounts.nft_mint.clone(),
+                accounts.rent.clone(),
+            ]
+        )?;
+
+        invoke(
+            &spl_token::instruction::mint_to(
+                accounts.token_program.key,
+                accounts.nft_mint.key,
+                accounts.token_account.key,
+                accounts.payer.key,
+                &[],
+                1,
+            )?,
+            &[
+                accounts.nft_mint.clone(),
+                accounts.token_account.clone(),
+                accounts.payer.clone(),
+            ],
+        )?;
+
+        let creators: Vec<spl_token_metadata::state::Creator> = vec![spl_token_metadata::state::Creator{
+            address: *program_id,
+            verified: true,
+            share: 0,
+        }];
+
+        invoke(
+            &create_metadata_accounts(
+                *accounts.token_metadata_program.key,
+                *accounts.metadata_account_info.key,
+                *accounts.nft_mint.key,
+                *accounts.payer.key,
+                *accounts.payer.key,
+                *accounts.payer.key,
+                String::from("LitsLinkNft"),
+                String::from(SYMBOL),
+                String::from(""),
+                Some(creators),
+                100,
+                true,
+                true,
+            ),
+            &[
+                accounts.metadata_account_info.clone(),
+                accounts.nft_mint.clone(),
+                accounts.payer.clone(),
+                accounts.payer.clone(),
+                accounts.payer.clone(),
+                accounts.sys_info.clone(),
+                accounts.rent.clone(),
+            ]
+        )?;
+
+        invoke(
+            &create_master_edition(
+                *accounts.token_metadata_program.key,
+                *accounts.master_edition.key,
+                *accounts.nft_mint.key,
+                *accounts.payer.key,
+                *accounts.payer.key,
+                *accounts.metadata_account_info.key,
+                *accounts.payer.key,
+                None,
+            ),
+                &[
+                accounts.master_edition.clone(),
+                accounts.nft_mint.clone(),
+                accounts.payer.clone(),
+                accounts.payer.clone(),
+                accounts.payer.clone(),
+                accounts.metadata_account_info.clone(),
+                accounts.token_program.clone(),
+                accounts.sys_info.clone(),
+                accounts.rent.clone(),
+            ]
+        )?;
     }
 
     stake_data.amount = 0;
@@ -147,6 +253,11 @@ pub struct Accounts<'a, 'b> {
     pub token_assoc: &'a AccountInfo<'b>,
     pub stake_data_info: &'a AccountInfo<'b>,
     pub rent: &'a AccountInfo<'b>,
+    pub token_metadata_program: &'a AccountInfo<'b>,
+    pub metadata_account_info: &'a AccountInfo<'b>,
+    pub nft_mint: &'a AccountInfo<'b>,
+    pub master_edition: &'a AccountInfo<'b>,
+    pub token_account: &'a AccountInfo<'b>,
 }
 
 impl<'a, 'b> Accounts<'a, 'b> {
@@ -165,6 +276,11 @@ impl<'a, 'b> Accounts<'a, 'b> {
             token_assoc: next_account_info(acc_iter)?,
             stake_data_info: next_account_info(acc_iter)?,
             rent: next_account_info(acc_iter)?,
+            token_metadata_program: next_account_info(acc_iter)?,
+            metadata_account_info: next_account_info(acc_iter)?,
+            nft_mint: next_account_info(acc_iter)?,
+            master_edition: next_account_info(acc_iter)?,
+            token_account: next_account_info(acc_iter)?,
         })
     }
 }

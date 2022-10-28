@@ -1,4 +1,4 @@
-pub const PROGRAM_ID: &str = "5ivYh5FjMdVB4t7RkpGpFK9NCMrL3DGSgbCBqWrbXVUC";
+pub const PROGRAM_ID: &str = "7CL7BEKMd5BuJqzVbwXUAtwjRCFN9EjrQXcfgLJedpjm";
 
 pub const VAULT: &[u8] = "vault".as_bytes();
 

@@ -1,2 +1,2 @@
-cargo build-bpf --manifest-path=./program/Cargo.toml --bpf-out-dir=./dist/program
-solana program deploy dist/program/example_program.so
+cargo build-bpf --manifest-path=./programs/reward_pool/Cargo.toml --bpf-out-dir=./dist/reward_pool
+solana program deploy dist/reward_pool/reward_pool.so

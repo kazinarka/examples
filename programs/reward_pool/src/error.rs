@@ -2,7 +2,7 @@ use num_derive::FromPrimitive;
 use solana_program::{decode_error::DecodeError, program_error::ProgramError};
 use thiserror::Error;
 
-/// Errors that may be returned by the Contract program.
+/// Errors that may be returned by the Contract reward_pool.
 #[derive(Clone, Debug, Eq, Error, FromPrimitive, PartialEq)]
 pub enum ContractError {
     #[error("An instruction's data contents was invalid")]

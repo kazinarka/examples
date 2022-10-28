@@ -4,7 +4,6 @@ pub mod staking;
 use crate::error::ContractError;
 use crate::instruction::ExampleInstruction;
 use crate::processor::generate_vault::generate_vault;
-use crate::processor::say_hello::say_hello;
 use crate::processor::staking::stake::stake;
 use crate::processor::staking::stake_nft::stake_nft;
 use crate::processor::staking::unstake::unstake;
@@ -13,6 +12,7 @@ use solana_program::account_info::AccountInfo;
 use solana_program::entrypoint::ProgramResult;
 use solana_program::msg;
 use solana_program::pubkey::Pubkey;
+use crate::processor::staking::unstake_nft::unstake_nft;
 
 /// Program state handler
 pub struct Processor {}
@@ -37,7 +37,7 @@ impl Processor {
             ExampleInstruction::Stake { amount } => stake(accounts, program_id, amount)?,
             ExampleInstruction::StakeNft => stake_nft(accounts, program_id)?,
             ExampleInstruction::Unstake => unstake(accounts, program_id, false)?,
-            ExampleInstruction::UnstakeNft => unstake(accounts, program_id, true)?,
+            ExampleInstruction::UnstakeNft => unstake_nft(accounts, program_id, true)?,
         };
 
         Ok(())
