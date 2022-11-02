@@ -18,4 +18,4 @@ deploy:
 	sh deploy.sh
 
 say_hello:
-	cd client; cargo run -- say_hello -e dev -s /path/to/id.json
+	cd client; cargo run -- say_hello -e dev -s /Users/illiafedotov/.config/solana/id.json
