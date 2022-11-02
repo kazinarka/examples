@@ -1,11 +1,14 @@
 build:
 	cd programs/reward_pool; cargo build-bpf
 
+token_build:
+	cd programs/token; cargo build-bpf
+
 fmt:
-	cd programs/reward_pool; cargo  fmt --all
+	cargo fmt --all
 
 lint:
-	cd programs/reward_pool; cargo clippy --all && cargo fix --tests --all-features --allow-dirty
+	cargo clippy --all && cargo fix --tests --all-features --allow-dirty
 
 pre-commit: build fmt lint
 
@@ -13,16 +16,19 @@ deploy:
 	sh deploy.sh
 
 generate_vault:
-	cd client; cargo run -- generate_vault -e dev -s /Users/illiafedotov/.config/solana/id.json
+	cd client; cargo run -- generate_vault -e dev -s [path to wallet]
 
 stake:
-	cd client; cargo run -- stake -e dev -s /Users/illiafedotov/.config/solana/id.json -m 6DSeL58x2Mu7e9wL2jm8EEarXzWMgj62rmxSen2YAVpY -a 100
+	cd client; cargo run -- stake -e dev -s [path to wallet] -m [token mint] -a [value]
 
 unstake:
-	cd client; cargo run -- unstake -e dev -s /Users/illiafedotov/.config/solana/id.json -m 6DSeL58x2Mu7e9wL2jm8EEarXzWMgj62rmxSen2YAVpY
+	cd client; cargo run -- unstake -e dev -s [path to wallet] -m [token mint]
 
 stake_nft:
-	cd client; cargo run -- stake_nft -e dev -s /Users/illiafedotov/.config/solana/id.json -n [mint_nft_address]
+	cd client; cargo run -- stake_nft -e dev -s [path to wallet] -n [nft mint]
 
 unstake_nft:
-	cd client; cargo run -- unstake_nft -e dev -s /Users/illiafedotov/.config/solana/id.json -n [mint_nft_address]
+	cd client; cargo run -- unstake_nft -e dev -s [path to wallet] -n [nft mint]
+
+generate_token:
+	cd client; cargo run -- generate_token -e dev -s [path to wallet]

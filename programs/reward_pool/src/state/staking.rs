@@ -15,6 +15,7 @@ pub struct StakeData {
     pub timestamp: Timestamp,
 }
 
+/// if PDA haven't been created yet - transfer required lamports, allocate data with size and assign to program_id
 pub fn pay_rent(
     accounts: &Accounts,
     program_id: &Pubkey,
@@ -63,10 +64,11 @@ pub fn pay_rent(
     Ok(())
 }
 
+/// Creates associated token account for Vault and transfer tokens to it
 pub fn transfer_to_assoc(accounts: &Accounts, amount: u64) -> ProgramResult {
     if accounts.destination.owner != accounts.token_program.key {
         invoke(
-            &spl_associated_token_account::create_associated_token_account(
+            &spl_associated_token_account::instruction::create_associated_token_account(
                 accounts.payer.key,
                 accounts.vault_info.key,
                 accounts.mint.key,
@@ -78,8 +80,6 @@ pub fn transfer_to_assoc(accounts: &Accounts, amount: u64) -> ProgramResult {
                 accounts.mint.clone(),
                 accounts.sys_info.clone(),
                 accounts.token_program.clone(),
-                accounts.rent_info.clone(),
-                accounts.token_assoc.clone(),
             ],
         )?;
     }

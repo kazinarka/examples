@@ -12,20 +12,24 @@ use solana_program::sysvar::Sysvar;
 pub fn generate_vault(accounts: &[AccountInfo], program_id: &Pubkey) -> ProgramResult {
     let accounts = Accounts::new(accounts)?;
 
+    // get Rent
     let rent = &Rent::from_account_info(accounts.rent_info)?;
 
+    // find Vault address
     let (vault_pda, vault_bump_seed) = Pubkey::find_program_address(&[VAULT], program_id);
 
     if accounts.pda.key != &vault_pda {
         return Err(ContractError::InvalidInstructionData.into());
     }
 
+    // admin check
     let admin = ADMIN.parse::<Pubkey>().unwrap();
 
     if *accounts.payer.key != admin || !accounts.payer.is_signer {
         return Err(ContractError::UnauthorisedAccess.into());
     }
 
+    // if PDA haven't been created yet - transfer required lamports and assign to program_id
     if accounts.pda.owner != program_id {
         let required_lamports = rent
             .minimum_balance(0)
@@ -53,9 +57,13 @@ pub fn generate_vault(accounts: &[AccountInfo], program_id: &Pubkey) -> ProgramR
 
 #[allow(dead_code)]
 pub struct Accounts<'a, 'b> {
+    /// Wallet
     pub payer: &'a AccountInfo<'b>,
+    /// Solana system program
     pub system_program: &'a AccountInfo<'b>,
+    /// Vault PDA
     pub pda: &'a AccountInfo<'b>,
+    /// Rent program
     pub rent_info: &'a AccountInfo<'b>,
 }
 

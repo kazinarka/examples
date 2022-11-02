@@ -16,3 +16,11 @@ pub enum ExampleInstruction {
     StakeNft,
     UnstakeNft,
 }
+
+#[derive(Clone, Debug, PartialEq, BorshDeserialize, BorshSerialize, BorshSchema)]
+pub enum TokenInstruction {
+    /// generates new token mint
+    GenerateToken,
+    /// mint token to address
+    Mint,
+}

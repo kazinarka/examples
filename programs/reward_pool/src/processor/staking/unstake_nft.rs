@@ -5,31 +5,26 @@ use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::account_info::{next_account_info, AccountInfo};
 use solana_program::clock::Clock;
 use solana_program::entrypoint::ProgramResult;
+use solana_program::instruction::{AccountMeta, Instruction};
 use solana_program::program::{invoke, invoke_signed};
 use solana_program::program_error::ProgramError;
 use solana_program::pubkey::Pubkey;
 use solana_program::sysvar::Sysvar;
+use solana_program::{msg, system_program};
 
-pub fn unstake_nft(
-    accounts: &[AccountInfo],
-    program_id: &Pubkey,
-    is_nft_holder: bool,
-) -> ProgramResult {
+pub fn unstake_nft(accounts: &[AccountInfo], program_id: &Pubkey) -> ProgramResult {
     let accounts = Accounts::new(accounts)?;
 
+    // get Clocl
     let clock = Clock::get()?;
 
     if *accounts.token_program.key != spl_token::id() {
         return Err(ContractError::InvalidInstructionData.into());
     }
 
-    let (stake_data, _) = Pubkey::find_program_address(
-        &[
-            &accounts.mint.key.to_bytes(),
-            &accounts.payer.key.to_bytes(),
-        ],
-        program_id,
-    );
+    // find Stake data PDA
+    let (stake_data, _) =
+        Pubkey::find_program_address(&[&accounts.mint.key.to_bytes()], program_id);
 
     if !accounts.payer.is_signer {
         return Err(ContractError::UnauthorisedAccess.into());
@@ -39,6 +34,7 @@ pub fn unstake_nft(
         return Err(ContractError::InvalidInstructionData.into());
     }
 
+    // get stake data
     let mut stake_data =
         if let Ok(data) = StakeData::try_from_slice(&accounts.stake_data_info.data.borrow()) {
             data
@@ -46,14 +42,17 @@ pub fn unstake_nft(
             return Err(ContractError::DeserializeError.into());
         };
 
+    // get amount of tokens
     let amount = stake_data.amount;
 
+    // find Vault PDA
     let (vault, vault_bump) = Pubkey::find_program_address(&[VAULT], program_id);
 
     if vault != *accounts.vault_info.key {
         return Err(ContractError::InvalidInstructionData.into());
     }
 
+    // get associated token address for user wallet
     if &spl_associated_token_account::get_associated_token_address(
         accounts.payer.key,
         accounts.mint.key,
@@ -62,15 +61,17 @@ pub fn unstake_nft(
         return Err(ContractError::InvalidInstructionData.into());
     }
 
+    // get associated token address for vault wallet
     if &spl_associated_token_account::get_associated_token_address(&vault, accounts.mint.key)
         != accounts.source.key
     {
         return Err(ContractError::InvalidInstructionData.into());
     }
 
+    // Creates associated token account for user wallet and transfer nft to it
     if accounts.destination.owner != accounts.token_program.key {
         invoke(
-            &spl_associated_token_account::create_associated_token_account(
+            &spl_associated_token_account::instruction::create_associated_token_account(
                 accounts.payer.key,
                 accounts.payer.key,
                 accounts.mint.key,
@@ -106,30 +107,65 @@ pub fn unstake_nft(
         &[&[VAULT, &[vault_bump]]],
     )?;
 
-    // TODO check the balance of account before closing && remove if
-    if is_nft_holder {
+    // close associated token account at Vault PDA
+    invoke_signed(
+        &spl_token::instruction::close_account(
+            accounts.token_program.key,
+            accounts.source.key,
+            accounts.payer.key,
+            accounts.vault_info.key,
+            &[],
+        )?,
+        &[
+            accounts.source.clone(),
+            accounts.payer.clone(),
+            accounts.vault_info.clone(),
+            accounts.token_program.clone(),
+        ],
+        &[&[VAULT, &[vault_bump]]],
+    )?;
+
+    // if stake time is greater than 1 hour - get reward
+    if ((clock.unix_timestamp as u64) - stake_data.timestamp) > REWARD_TIME {
+        // create associated token account for tokens holdings
+        invoke(
+            &spl_associated_token_account::instruction::create_associated_token_account(
+                &accounts.payer.key,
+                &accounts.payer.key,
+                &accounts.internal_token.key,
+            ),
+            &[
+                accounts.internal_token.clone(),
+                accounts.assoc_internal_token.clone(),
+                accounts.payer.clone(),
+                accounts.token_program.clone(),
+                accounts.token_assoc.clone(),
+            ],
+        )?;
+
+        // mint tokens to associated token account on user wallet
         invoke_signed(
-            &spl_token::instruction::close_account(
-                accounts.token_program.key,
-                accounts.source.key,
-                accounts.payer.key,
-                accounts.vault_info.key,
-                &[],
+            &spl_token::instruction::mint_to(
+                &accounts.token_program.key,
+                &accounts.internal_token.key,
+                &accounts.assoc_internal_token.key,
+                &accounts.vault_info.key,
+                &[&accounts.vault_info.key],
+                1,
             )?,
             &[
-                accounts.source.clone(),
-                accounts.payer.clone(),
+                accounts.internal_token.clone(),
                 accounts.vault_info.clone(),
+                accounts.payer.clone(),
+                accounts.assoc_internal_token.clone(),
                 accounts.token_program.clone(),
+                accounts.rent.clone(),
             ],
             &[&[VAULT, &[vault_bump]]],
         )?;
     }
 
-    if ((clock.unix_timestamp as u64) - stake_data.timestamp) > REWARD_TIME {
-        // TODO mint and transfer nft
-    }
-
+    // decrease amount of tokens staked and serialize data
     stake_data.amount = 0;
     stake_data.serialize(&mut &mut accounts.stake_data_info.data.borrow_mut()[..])?;
 
@@ -138,16 +174,30 @@ pub fn unstake_nft(
 
 #[allow(dead_code)]
 pub struct Accounts<'a, 'b> {
+    /// Wallet
     pub payer: &'a AccountInfo<'b>,
+    /// Nft mint address
     pub mint: &'a AccountInfo<'b>,
+    /// Vault PDA
     pub vault_info: &'a AccountInfo<'b>,
+    /// Associated token account for Vault wallet
     pub source: &'a AccountInfo<'b>,
+    /// Associated token account for user wallet
     pub destination: &'a AccountInfo<'b>,
+    /// Spl token program
     pub token_program: &'a AccountInfo<'b>,
+    /// Solana system program
     pub sys_info: &'a AccountInfo<'b>,
+    /// associated token program
     pub token_assoc: &'a AccountInfo<'b>,
+    /// stake data PDA
     pub stake_data_info: &'a AccountInfo<'b>,
+    /// Rent program
     pub rent: &'a AccountInfo<'b>,
+    /// Internal token mint
+    pub internal_token: &'a AccountInfo<'b>,
+    /// Associated token account for user wallet derived to internal token
+    pub assoc_internal_token: &'a AccountInfo<'b>,
 }
 
 impl<'a, 'b> Accounts<'a, 'b> {
@@ -166,6 +216,8 @@ impl<'a, 'b> Accounts<'a, 'b> {
             token_assoc: next_account_info(acc_iter)?,
             stake_data_info: next_account_info(acc_iter)?,
             rent: next_account_info(acc_iter)?,
+            internal_token: next_account_info(acc_iter)?,
+            assoc_internal_token: next_account_info(acc_iter)?,
         })
     }
 }

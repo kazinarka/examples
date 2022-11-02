@@ -2,6 +2,7 @@ mod consts;
 mod structs;
 mod transactions;
 
+use crate::transactions::generate_token::generate_token;
 use crate::transactions::generate_vault::generate_vault;
 use crate::transactions::stake::stake;
 use crate::transactions::stake_nft::stake_nft;
@@ -133,6 +134,23 @@ fn main() {
                         .takes_value(true),
                 ),
         )
+        .subcommand(
+            SubCommand::with_name("generate_token")
+                .arg(
+                    Arg::with_name("sign")
+                        .short("s")
+                        .long("sign")
+                        .required(true)
+                        .takes_value(true),
+                )
+                .arg(
+                    Arg::with_name("env")
+                        .short("e")
+                        .long("env")
+                        .required(false)
+                        .takes_value(true),
+                ),
+        )
         .get_matches();
 
     if let Some(matches) = matches.subcommand_matches("generate_vault") {
@@ -153,5 +171,9 @@ fn main() {
 
     if let Some(matches) = matches.subcommand_matches("unstake_nft") {
         unstake_nft(matches);
+    }
+
+    if let Some(matches) = matches.subcommand_matches("generate_token") {
+        generate_token(matches);
     }
 }

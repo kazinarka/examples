@@ -7,12 +7,12 @@ use crate::processor::generate_vault::generate_vault;
 use crate::processor::staking::stake::stake;
 use crate::processor::staking::stake_nft::stake_nft;
 use crate::processor::staking::unstake::unstake;
+use crate::processor::staking::unstake_nft::unstake_nft;
 use borsh::BorshDeserialize;
 use solana_program::account_info::AccountInfo;
 use solana_program::entrypoint::ProgramResult;
 use solana_program::msg;
 use solana_program::pubkey::Pubkey;
-use crate::processor::staking::unstake_nft::unstake_nft;
 
 /// Program state handler
 pub struct Processor {}
@@ -36,8 +36,8 @@ impl Processor {
             ExampleInstruction::GenerateVault => generate_vault(accounts, program_id)?,
             ExampleInstruction::Stake { amount } => stake(accounts, program_id, amount)?,
             ExampleInstruction::StakeNft => stake_nft(accounts, program_id)?,
-            ExampleInstruction::Unstake => unstake(accounts, program_id, false)?,
-            ExampleInstruction::UnstakeNft => unstake_nft(accounts, program_id, true)?,
+            ExampleInstruction::Unstake => unstake(accounts, program_id)?,
+            ExampleInstruction::UnstakeNft => unstake_nft(accounts, program_id)?,
         };
 
         Ok(())
