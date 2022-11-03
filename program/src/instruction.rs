@@ -1,14 +1,12 @@
 use borsh::{BorshDeserialize, BorshSchema, BorshSerialize};
-use solana_program::instruction::Instruction;
-use solana_program::pubkey::Pubkey;
 
 #[derive(Clone, Debug, PartialEq, BorshDeserialize, BorshSerialize, BorshSchema)]
 pub enum ExampleInstruction {
-    SayHello,
+    GenerateRandomNumber {
+        /// max result of random number
+        #[allow(dead_code)]
+        max_result: u64,
+    },
 }
 
-impl ExampleInstruction {
-    pub fn say_hello(program_id: Pubkey) -> Instruction {
-        Instruction::new_with_borsh(program_id, &ExampleInstruction::SayHello, vec![])
-    }
-}
+impl ExampleInstruction {}

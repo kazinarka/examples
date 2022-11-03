@@ -4,7 +4,7 @@ use clap::{
 };
 use solana_client::rpc_client::RpcClient;
 use solana_sdk::commitment_config::CommitmentConfig;
-use solana_sdk::instruction::Instruction;
+use solana_sdk::instruction::{AccountMeta, Instruction};
 use solana_sdk::pubkey::Pubkey;
 use solana_sdk::signature::{read_keypair_file, Signer};
 #[allow(unused_imports)]
@@ -13,17 +13,21 @@ use solana_sdk::signer::keypair::Keypair;
 use solana_sdk::signer::signers::Signers;
 use solana_sdk::transaction::Transaction;
 
-pub const PROGRAM_ID: &str = "4T7xMGLUSPhpnAou6TiZDB9XCDHgGx1u7hDbGWdXnfmG";
+pub const PROGRAM_ID: &str = "BZMNMWMcjtj3pXQihBJEjFgZpc24zo534dGuDNxGJUDd";
 
 #[derive(Clone, Debug, PartialEq, BorshDeserialize, BorshSerialize, BorshSchema)]
 pub enum ExampleInstruction {
-    SayHello,
+    GenerateRandomNumber {
+        /// max result of random number
+        #[allow(dead_code)]
+        max_result: u64,
+    },
 }
 
 fn main() {
     let matches = app_from_crate!()
         .subcommand(
-            SubCommand::with_name("say_hello")
+            SubCommand::with_name("generate_random_number")
                 .arg(
                     Arg::with_name("sign")
                         .short("s")
@@ -41,7 +45,7 @@ fn main() {
         )
         .get_matches();
 
-    if let Some(matches) = matches.subcommand_matches("say_hello") {
+    if let Some(matches) = matches.subcommand_matches("generate_random_number") {
         let program_id = PROGRAM_ID.parse::<Pubkey>().unwrap();
 
         let url = match matches.value_of("env") {
@@ -54,10 +58,18 @@ fn main() {
         let wallet_keypair = read_keypair_file(wallet_path).expect("Can't open file-wallet");
         let wallet_pubkey = wallet_keypair.pubkey();
 
+        let btc = "9AR8aftLBcspD1CKgzYBqtKQUTifYsYaA5xRSary1ntM".parse::<Pubkey>().unwrap();
+        let eth = "H4ZLU7F3QMLqTkn9CM4dtTkcEtfjncvK2hacjDwmrCXv".parse::<Pubkey>().unwrap();
+        let sol = "7AFybWd6zMQnkUsvpxc8CnSFUFWzVfGq9tMVxUVue1bk".parse::<Pubkey>().unwrap();
+
         let instructions = vec![Instruction::new_with_borsh(
             program_id,
-            &ExampleInstruction::SayHello,
-            vec![],
+            &ExampleInstruction::GenerateRandomNumber {max_result: 1000},
+            vec![
+                AccountMeta::new(btc, false),
+                AccountMeta::new(eth, false),
+                AccountMeta::new(sol, false),
+            ],
         )];
 
         let mut tx = Transaction::new_with_payer(&instructions, Some(&wallet_pubkey));

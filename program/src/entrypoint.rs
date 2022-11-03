@@ -9,9 +9,9 @@ use solana_program::{entrypoint, msg};
 
 entrypoint!(process_instruction);
 
-pub fn process_instruction(
+pub fn process_instruction<'info>(
     program_id: &Pubkey,
-    accounts: &[AccountInfo],
+    accounts: &'info [AccountInfo<'info>],
     instruction_data: &[u8],
 ) -> ProgramResult {
     if let Err(error) = Processor::process(program_id, accounts, instruction_data) {

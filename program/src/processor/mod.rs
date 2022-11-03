@@ -1,8 +1,8 @@
-pub mod say_hello;
+pub mod generate_random_number;
 
 use crate::error::ContractError;
 use crate::instruction::ExampleInstruction;
-use crate::processor::say_hello::say_hello;
+use crate::processor::generate_random_number::generate_random_number;
 use borsh::BorshDeserialize;
 use solana_program::account_info::AccountInfo;
 use solana_program::entrypoint::ProgramResult;
@@ -13,9 +13,9 @@ use solana_program::pubkey::Pubkey;
 pub struct Processor {}
 
 impl Processor {
-    pub fn process(
-        _program_id: &Pubkey,
-        _accounts: &[AccountInfo],
+    pub fn process<'info>(
+        program_id: &Pubkey,
+        accounts: &'info [AccountInfo<'info>],
         instruction_data: &[u8],
     ) -> ProgramResult {
         let instruction: ExampleInstruction =
@@ -28,7 +28,7 @@ impl Processor {
             };
 
         match instruction {
-            ExampleInstruction::SayHello => say_hello()?,
+            ExampleInstruction::GenerateRandomNumber {max_result} => generate_random_number(accounts, program_id, max_result)?,
         };
 
         Ok(())
