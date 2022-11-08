@@ -7,6 +7,11 @@ pub enum ExampleInstruction {
         #[allow(dead_code)]
         max_result: u64,
     },
+    GenerateRandomNumberV2 {
+        /// max result of random number
+        #[allow(dead_code)]
+        max_result: u64,
+    },
 }
 
 impl ExampleInstruction {}

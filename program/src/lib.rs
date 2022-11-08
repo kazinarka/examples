@@ -3,4 +3,4 @@ pub mod error;
 pub mod instruction;
 pub mod processor;
 
-solana_program::declare_id!("cvYzVCjCTa12jGVosTAeurEHx4zDNkBFF1BRLJAMBPz");
+solana_program::declare_id!("BZMNMWMcjtj3pXQihBJEjFgZpc24zo534dGuDNxGJUDd");

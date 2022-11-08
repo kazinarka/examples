@@ -19,3 +19,6 @@ deploy:
 
 generate_random_number:
 	cd client; cargo run -- generate_random_number -e dev -s /Users/illiafedotov/.config/solana/id.json
+
+generate_random_number_v2:
+	cd client; cargo run -- generate_random_number_v2 -e dev -s /Users/illiafedotov/.config/solana/id.json

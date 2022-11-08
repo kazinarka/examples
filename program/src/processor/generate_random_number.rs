@@ -8,7 +8,7 @@ use solana_program::clock::Clock;
 use solana_program::sysvar::Sysvar;
 use switchboard_v2::AggregatorAccountData;
 
-pub fn generate_random_number<'info>(accounts: &'info [AccountInfo<'info>], _program_id: &Pubkey, _max_result: u64) -> ProgramResult {
+pub fn generate_random_number<'info>(accounts: &'info [AccountInfo<'info>], _program_id: &Pubkey, max_result: u64) -> ProgramResult {
     let accounts = Accounts::new(accounts)?;
 
     let c = Clock::get().unwrap();
@@ -17,14 +17,13 @@ pub fn generate_random_number<'info>(accounts: &'info [AccountInfo<'info>], _pro
     let eth_val: f64 = AggregatorAccountData::new(accounts.eth_aggregator)?.get_result()?.try_into()?;
     let sol_val: f64 = AggregatorAccountData::new(accounts.sol_aggregator)?.get_result()?.try_into()?;
 
-    let mut final_val: u128 = 0;
-    if c.unix_timestamp % 2 == 0 {
-        final_val = (btc_val*eth_val*sol_val).round() as u128;
+    let final_val = if c.unix_timestamp % 2 == 0 {
+        (btc_val*eth_val*sol_val).round() as u128
     } else {
-        final_val = (btc_val*sol_val).round() as u128;
-    }
+        (btc_val*sol_val).round() as u128
+    };
 
-    msg!("Current feed result is {}!", final_val);
+    msg!("Current feed result is {}!", final_val % max_result);
 
     Ok(())
 }
