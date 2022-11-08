@@ -1,0 +1,51 @@
+use crate::*;
+
+#[derive(Accounts)]
+#[instruction(params: InitClientParams)]
+pub struct InitClient<'info> {
+    #[account(
+    init,
+    seeds = [
+    STATE_SEED,
+    vrf.key().as_ref()
+    ],
+    payer = payer,
+    space = 8 + std::mem::size_of::<VrfClientState>(),
+    bump,
+    )]
+    pub state: AccountLoader<'info, VrfClientState>,
+    #[account(
+    constraint = vrf.load()?.authority == state.key() @ AnchorVrfErrorCode::InvalidVrfAuthorityError
+    )]
+    pub vrf: AccountLoader<'info, VrfAccountData>,
+    #[account(mut)]
+    pub payer: Signer<'info>,
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Clone, AnchorSerialize, AnchorDeserialize)]
+pub struct InitClientParams {}
+
+impl InitClient<'_>  {
+    pub fn validate(&self, _ctx: &Context<Self>, _params: &InitClientParams) -> Result<()> {
+        msg!("init_client validate");
+
+        Ok(())
+    }
+
+    pub fn actuate(ctx: &Context<Self>, _params: &InitClientParams) -> Result<()> {
+        msg!("init_client actuate");
+
+        let mut state = ctx.accounts.state.load_init()?;
+        *state = VrfClientState::default();
+        state.bump = ctx.bumps.get("state").unwrap().clone();
+        state.vrf = ctx.accounts.vrf.key();
+
+        emit!(VrfClientCreated{
+            vrf_client: ctx.accounts.state.key(),
+            timestamp: clock::Clock::get().unwrap().unix_timestamp
+        });
+
+        Ok(())
+    }
+}

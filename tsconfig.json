@@ -1,0 +1,23 @@
+{
+  "ts-node": {
+    "compilerOptions": {
+      "module": "commonjs"
+    }
+  },
+  "compilerOptions": {
+    "types": ["mocha", "chai", "node"],
+    "typeRoots": ["./node_modules/@types"],
+    "module": "commonjs",
+    "noEmit": true,
+    "esModuleInterop": true,
+    "strict": false,
+    "strictNullChecks": false,
+    "paths": {
+      "@switchboard-xyz/switchboard-v2": ["./node_modules/@switchboard-xyz/switchboard-v2"],
+      "@switchboard-xyz/sbv2-utils": ["./node_modules/@switchboard-xyz/sbv2-utils"],
+      "@solana/spl-token": ["./node_modules/@solana/spl-token"]
+    }
+  },
+  "include": ["tests/**/*"],
+  "exclude": ["target", "lib"],
+}
