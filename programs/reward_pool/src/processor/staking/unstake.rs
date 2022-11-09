@@ -1,4 +1,4 @@
-use crate::consts::{NFT, REQUIRED_SIZE, REWARD_TIME, VAULT};
+use crate::consts::{REQUIRED_SIZE, REWARD_TIME, VAULT};
 use crate::error::ContractError;
 use crate::state::staking::StakeData;
 use borsh::{BorshDeserialize, BorshSerialize};
@@ -9,8 +9,8 @@ use solana_program::program::{invoke, invoke_signed};
 use solana_program::program_error::ProgramError;
 use solana_program::pubkey::Pubkey;
 use solana_program::rent::Rent;
-use solana_program::system_instruction;
 use solana_program::sysvar::Sysvar;
+use mpl_token_metadata::instruction::{create_metadata_accounts_v3, create_master_edition_v3};
 
 pub fn unstake(accounts: &[AccountInfo], program_id: &Pubkey) -> ProgramResult {
     let accounts = Accounts::new(accounts)?;
@@ -185,101 +185,69 @@ pub fn unstake(accounts: &[AccountInfo], program_id: &Pubkey) -> ProgramResult {
             ],
         )?;
 
-        // find platform's nft PDA
-        let (nft_pda, nft_pda_bump_seed) =
-            Pubkey::find_program_address(&[NFT, &accounts.nft_mint.key.to_bytes()], program_id);
+        // generate creator
+        let creator = vec![
+            mpl_token_metadata::state::Creator {
+                address: *program_id,
+                verified: true,
+                share: 100,
+            },
+        ];
 
-        if nft_pda != *accounts.nft_pda_info.key {
-            return Err(ContractError::InvalidInstructionData.into());
-        }
+        // create metaplex metadata account
+        invoke(
+            &create_metadata_accounts_v3(
+                *accounts.metadata_program.key,
+                *accounts.metadata.key,
+                *accounts.nft_mint.key,
+                *accounts.payer.key,
+                *accounts.payer.key,
+                *accounts.payer.key,
+                "LitsLinkNft".to_owned(),
+                "LL".to_owned(),
+                "".to_owned(),
+                Some(creator),
+                1,
+                true,
+                false,
+                None,
+                None,
+                None
 
-        // if PDA haven't been created yet - transfer required lamports and assign to program_id
-        if accounts.nft_pda_info.owner != program_id {
-            let required_lamports = rent
-                .minimum_balance(0)
-                .max(1)
-                .saturating_sub(accounts.nft_pda_info.lamports());
+            ),
+            &[
+                accounts.metadata.clone(),
+                accounts.nft_mint.clone(),
+                accounts.payer.clone(),
+                accounts.payer.clone(),
+                accounts.sys_info.clone(),
+                accounts.rent.clone()
+            ],
+        )?;
 
-            invoke(
-                &system_instruction::transfer(accounts.payer.key, &nft_pda, required_lamports),
-                &[
-                    accounts.payer.clone(),
-                    accounts.nft_pda_info.clone(),
-                    accounts.sys_info.clone(),
-                ],
-            )?;
-
-            invoke_signed(
-                &system_instruction::assign(&nft_pda, program_id),
-                &[accounts.nft_pda_info.clone(), accounts.sys_info.clone()],
-                &[&[NFT, &accounts.nft_mint.key.to_bytes(), &[nft_pda_bump_seed]]],
-            )?;
-        }
-
-        // TODO find out how to do
-        // let creator = vec![
-        //     mpl_token_metadata::state::Creator {
-        //         address: *program_id,
-        //         verified: false,
-        //         share: 100,
-        //     },
-        //     mpl_token_metadata::state::Creator {
-        //         address: *accounts.payer.key,
-        //         verified: false,
-        //         share: 0,
-        //     },
-        // ];
-        //
-        // invoke(
-        //     &mpl_token_metadata::instruction::create_metadata_accounts_v2(
-        //         *accounts.token_metadata_program.key,
-        //         *accounts.metadata_account_info.key,
-        //         *accounts.nft_mint.key,
-        //         *accounts.payer.key,
-        //         *accounts.payer.key,
-        //         *accounts.payer.key,
-        //         String::from("LitsLinkNFT"),
-        //         String::from(SYMBOL),
-        //         String::from(""),
-        //         Some(creator),
-        //         1,
-        //         true,
-        //         false,
-        //         None,
-        //         None,
-        //     ),
-        //     &[
-        //         accounts.metadata_account_info.clone(),
-        //         accounts.nft_mint.clone(),
-        //         accounts.payer.clone(),
-        //         accounts.payer.clone(),
-        //         accounts.token_metadata_program.clone(),
-        //         accounts.token_program.clone(),
-        //         accounts.sys_info.clone(),
-        //         accounts.rent.clone(),
-        //     ]
-        // )?;
-        //
-        // invoke(
-        //     &mpl_token_metadata::instruction::create_master_edition_v3(
-        //         *accounts.token_metadata_program.key,
-        //         *accounts.master_edition.key,
-        //         *accounts.nft_mint.key,
-        //         *accounts.payer.key,
-        //         *accounts.payer.key,
-        //         *accounts.metadata_account_info.key,
-        //         *accounts.payer.key,
-        //         Some(0),
-        //     ),
-        //         &[
-        //         accounts.master_edition.clone(),
-        //         accounts.metadata_account_info.clone(),
-        //         accounts.nft_mint.clone(),
-        //         accounts.token_account.clone(),
-        //         accounts.payer.clone(),
-        //         accounts.rent.clone(),
-        //     ]
-        // )?;
+        // create master edition for metadata
+        invoke(
+            &create_master_edition_v3(
+                *accounts.metadata_program.key,
+                *accounts.master_edition.key,
+                *accounts.nft_mint.key,
+                *accounts.payer.key,
+                *accounts.payer.key,
+                *accounts.metadata.key,
+                *accounts.payer.key,
+                Some(0),
+            ),
+            &[
+                accounts.master_edition.clone(),
+                accounts.nft_mint.clone(),
+                accounts.payer.clone(),
+                accounts.payer.clone(),
+                accounts.metadata.clone(),
+                accounts.metadata_program.clone(),
+                accounts.sys_info.clone(),
+                accounts.rent.clone(),
+            ],
+        )?;
     }
 
     // decrease amount of tokens staked and serialize data
@@ -315,8 +283,12 @@ pub struct Accounts<'a, 'b> {
     pub nft_mint: &'a AccountInfo<'b>,
     /// associated token account address for nft in user wallet
     pub token_account: &'a AccountInfo<'b>,
-    /// platform's nft PDA
-    pub nft_pda_info: &'a AccountInfo<'b>,
+    /// nft's metadata
+    pub metadata: &'a AccountInfo<'b>,
+    /// metadata program
+    pub metadata_program: &'a AccountInfo<'b>,
+    /// nft's master edition account
+    pub master_edition: &'a AccountInfo<'b>,
 }
 
 impl<'a, 'b> Accounts<'a, 'b> {
@@ -337,7 +309,9 @@ impl<'a, 'b> Accounts<'a, 'b> {
             rent: next_account_info(acc_iter)?,
             nft_mint: next_account_info(acc_iter)?,
             token_account: next_account_info(acc_iter)?,
-            nft_pda_info: next_account_info(acc_iter)?,
+            metadata: next_account_info(acc_iter)?,
+            metadata_program: next_account_info(acc_iter)?,
+            master_edition: next_account_info(acc_iter)?,
         })
     }
 }

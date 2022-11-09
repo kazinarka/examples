@@ -1,6 +1,7 @@
-use crate::consts::{ASSOCIATED_TOKEN, NFT, PROGRAM_ID, RENT, VAULT};
+use crate::consts::{ASSOCIATED_TOKEN, PROGRAM_ID, RENT, VAULT};
 use crate::structs::ExampleInstruction;
 use clap::ArgMatches;
+use mpl_token_metadata::state::{EDITION, PREFIX};
 use solana_client::rpc_client::RpcClient;
 use solana_sdk::commitment_config::CommitmentConfig;
 use solana_sdk::instruction::{AccountMeta, Instruction};
@@ -19,7 +20,7 @@ pub fn unstake(matches: &ArgMatches) {
 
     // choose url of solana cluster
     let url = match matches.value_of("env") {
-        Some("dev") => "https://api.testnet.solana.com",
+        Some("dev") => "https://api.devnet.solana.com",
         _ => "https://api.mainnet-beta.solana.com",
     };
     // get client
@@ -56,28 +57,26 @@ pub fn unstake(matches: &ArgMatches) {
         &nft_mint.pubkey(),
     );
 
-    // get platform's nft PDA
-    let (nft_pda, _) =
-        Pubkey::find_program_address(&[NFT, &nft_mint.pubkey().to_bytes()], &program_id);
+    // find metadata account
+    let (metadata, _) = Pubkey::find_program_address(
+        &[
+            PREFIX.as_bytes(),
+            &mpl_token_metadata::ID.to_bytes(),
+            &nft_mint.pubkey().to_bytes(),
+        ],
+        &mpl_token_metadata::ID,
+    );
 
-    // let (metadata, _) = Pubkey::find_program_address(
-    //     &[
-    //         PREFIX.as_bytes(),
-    //         &mpl_token_metadata::ID.to_bytes(),
-    //         &nft_mint.pubkey().to_bytes(),
-    //     ],
-    //     &mpl_token_metadata::ID,
-    // );
-    //
-    // let (master_edition, _) = Pubkey::find_program_address(
-    //     &[
-    //         PREFIX.as_bytes(),
-    //         &mpl_token_metadata::ID.to_bytes(),
-    //         &nft_mint.pubkey().to_bytes(),
-    //         EDITION.as_bytes(),
-    //     ],
-    //     &mpl_token_metadata::ID,
-    // );
+    // find master edition account
+    let (master_edition, _) = Pubkey::find_program_address(
+        &[
+            PREFIX.as_bytes(),
+            &mpl_token_metadata::ID.to_bytes(),
+            &nft_mint.pubkey().to_bytes(),
+            EDITION.as_bytes(),
+        ],
+        &mpl_token_metadata::ID,
+    );
 
     // construct instruction
     let instructions = vec![Instruction::new_with_borsh(
@@ -96,7 +95,9 @@ pub fn unstake(matches: &ArgMatches) {
             AccountMeta::new_readonly(RENT.parse::<Pubkey>().unwrap(), false),
             AccountMeta::new(nft_mint.pubkey(), true),
             AccountMeta::new(token_account, false),
-            AccountMeta::new(nft_pda, false),
+            AccountMeta::new(metadata, false),
+            AccountMeta::new_readonly(mpl_token_metadata::id(), false),
+            AccountMeta::new(master_edition, false),
         ],
     )];
     // generate transaction

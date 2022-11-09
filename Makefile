@@ -16,19 +16,19 @@ deploy:
 	sh deploy.sh
 
 generate_vault:
-	cd client; cargo run -- generate_vault -e dev -s [path to wallet]
+	cd client; cargo run -- generate_vault -e dev -s /Users/glebprotasov/.config/solana/id.json
 
 stake:
-	cd client; cargo run -- stake -e dev -s [path to wallet] -m [token mint] -a [value]
+	cd client; cargo run -- stake -e dev -s /Users/glebprotasov/.config/solana/id.json -m 3aH3TVcDvTNRr8c9gX2o7qxjZ4ktufwRLVhDhiZtPAWU -a 1
 
 unstake:
-	cd client; cargo run -- unstake -e dev -s [path to wallet] -m [token mint]
+	cd client; cargo run -- unstake -e dev -s /Users/glebprotasov/.config/solana/id.json -m 3aH3TVcDvTNRr8c9gX2o7qxjZ4ktufwRLVhDhiZtPAWU
 
 stake_nft:
-	cd client; cargo run -- stake_nft -e dev -s [path to wallet] -n [nft mint]
+	cd client; cargo run -- stake_nft -e dev -s /Users/glebprotasov/.config/solana/id.json -n DtrtDnLdYnmiPbZe8hqFXM7k61cTeQQr8qxPraUBwU8s
 
 unstake_nft:
-	cd client; cargo run -- unstake_nft -e dev -s [path to wallet] -n [nft mint]
+	cd client; cargo run -- unstake_nft -e dev -s /Users/glebprotasov/.config/solana/id.json -n DtrtDnLdYnmiPbZe8hqFXM7k61cTeQQr8qxPraUBwU8s
 
 generate_token:
-	cd client; cargo run -- generate_token -e dev -s [path to wallet]
+	cd client; cargo run -- generate_token -e dev -s /Users/glebprotasov/.config/solana/id.json

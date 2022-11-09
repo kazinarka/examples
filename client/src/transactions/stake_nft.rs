@@ -1,4 +1,4 @@
-use crate::consts::{ASSOCIATED_TOKEN, NFT, PROGRAM_ID, RENT, VAULT};
+use crate::consts::{ASSOCIATED_TOKEN, PROGRAM_ID, RENT, VAULT};
 use crate::structs::ExampleInstruction;
 use clap::ArgMatches;
 use solana_client::rpc_client::RpcClient;
@@ -19,7 +19,7 @@ pub fn stake_nft(matches: &ArgMatches) {
 
     // choose url of solana cluster
     let url = match matches.value_of("env") {
-        Some("dev") => "https://api.testnet.solana.com",
+        Some("dev") => "https://api.devnet.solana.com",
         _ => "https://api.mainnet-beta.solana.com",
     };
     // get client
@@ -33,14 +33,15 @@ pub fn stake_nft(matches: &ArgMatches) {
     // get nft mint address
     let nft = matches.value_of("nft").unwrap().parse::<Pubkey>().unwrap();
 
-    // let (metadata, _) = Pubkey::find_program_address(
-    //     &[
-    //         "metadata".as_bytes(),
-    //         &mpl_token_metadata::ID.to_bytes(),
-    //         &nft.to_bytes(),
-    //     ],
-    //     &mpl_token_metadata::ID,
-    // );
+    // find metadata account
+    let (metadata, _) = Pubkey::find_program_address(
+        &[
+            "metadata".as_bytes(),
+            &mpl_token_metadata::ID.to_bytes(),
+            &nft.to_bytes(),
+        ],
+        &mpl_token_metadata::ID,
+    );
 
     // find vault PDA
     let (vault, _) = Pubkey::find_program_address(&[VAULT], &program_id);
@@ -53,9 +54,6 @@ pub fn stake_nft(matches: &ArgMatches) {
 
     // find stake data PDA
     let (stake_data, _) = Pubkey::find_program_address(&[&nft.to_bytes()], &program_id);
-
-    // get platform's nft PDA
-    let (nft_pda, _) = Pubkey::find_program_address(&[NFT, &nft.to_bytes()], &program_id);
 
     // construct instruction
     let instructions = vec![Instruction::new_with_borsh(
@@ -72,7 +70,7 @@ pub fn stake_nft(matches: &ArgMatches) {
             AccountMeta::new_readonly(RENT.parse::<Pubkey>().unwrap(), false),
             AccountMeta::new_readonly(ASSOCIATED_TOKEN.parse::<Pubkey>().unwrap(), false),
             AccountMeta::new(stake_data, false),
-            AccountMeta::new(nft_pda, false),
+            AccountMeta::new(metadata, false),
         ],
     )];
     // generate transaction

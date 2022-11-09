@@ -1,9 +1,12 @@
+use solana_program::account_info::AccountInfo;
 use crate::processor::staking::stake_nft::Accounts;
 use solana_program::entrypoint::ProgramResult;
 use solana_program::program::{invoke, invoke_signed};
 use solana_program::pubkey::Pubkey;
 use solana_program::rent::Rent;
 use solana_program::system_instruction;
+
+use crate::error::ContractError;
 
 /// if PDA haven't been created yet - transfer required lamports, allocate data with size and assign to program_id
 pub fn pay_rent(
@@ -88,22 +91,22 @@ pub fn transfer_nft_to_assoc(accounts: &Accounts) -> ProgramResult {
     Ok(())
 }
 
-// pub fn check_metadata_account(
-//     mint: &AccountInfo,
-//     metadata_account_info: &AccountInfo,
-// ) -> ProgramResult {
-//     if &Pubkey::find_program_address(
-//         &[
-//             "metadata".as_bytes(),
-//             &spl_token_metadata::ID.to_bytes(),
-//             &mint.key.to_bytes(),
-//         ],
-//         &spl_token_metadata::ID,
-//     )
-//     .0 != metadata_account_info.key
-//     {
-//         return Err(ContractError::InvalidInstructionData.into());
-//     }
-//
-//     Ok(())
-// }
+pub fn check_metadata_account(
+    mint: &AccountInfo,
+    metadata_account_info: &AccountInfo,
+) -> ProgramResult {
+    if &Pubkey::find_program_address(
+        &[
+            "metadata".as_bytes(),
+            &mpl_token_metadata::ID.to_bytes(),
+            &mint.key.to_bytes(),
+        ],
+        &mpl_token_metadata::ID,
+    )
+    .0 != metadata_account_info.key
+    {
+        return Err(ContractError::InvalidInstructionData.into());
+    }
+
+    Ok(())
+}

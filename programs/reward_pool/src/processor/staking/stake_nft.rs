@@ -1,8 +1,9 @@
-use crate::consts::{NFT, VAULT};
+use crate::consts::VAULT;
 use crate::error::ContractError;
-use crate::state::nft_staking::{pay_rent, transfer_nft_to_assoc};
+use crate::state::nft_staking::{check_metadata_account, pay_rent, transfer_nft_to_assoc};
 use crate::state::staking::StakeData;
 use borsh::BorshSerialize;
+use mpl_token_metadata::state::TokenMetadataAccount;
 use solana_program::account_info::{next_account_info, AccountInfo};
 use solana_program::clock::Clock;
 use solana_program::entrypoint::ProgramResult;
@@ -23,19 +24,6 @@ pub fn stake_nft(accounts: &[AccountInfo], program_id: &Pubkey) -> ProgramResult
 
     // get Rent
     let rent = &Rent::from_account_info(accounts.rent_info)?;
-
-    // find platform's nft PDA
-    let (nft_pda, _) =
-        Pubkey::find_program_address(&[NFT, &accounts.mint.key.to_bytes()], program_id);
-
-    if nft_pda != *accounts.nft_pda_info.key {
-        return Err(ContractError::InvalidInstructionData.into());
-    }
-
-    // check if nft is one of platform's nft
-    if accounts.nft_pda_info.owner != program_id {
-        return Err(ContractError::WrongNft.into());
-    }
 
     // find address for Stake data PDA
     let (stake_data, stake_data_bump) =
@@ -61,15 +49,25 @@ pub fn stake_nft(accounts: &[AccountInfo], program_id: &Pubkey) -> ProgramResult
     };
     stake_struct.serialize(&mut &mut accounts.stake_data_info.data.borrow_mut()[..])?;
 
-    // check_metadata_account(accounts.mint, accounts.metadata_account_info)?;
-    //
-    // let metadata =
-    //     spl_token_metadata::state::Metadata::from_account_info(accounts.metadata_account_info)?;
-    // let symbol = metadata.data.symbol;
-    //
-    // if symbol != SYMBOL {
-    //     return Err(ContractError::WrongNft.into());
-    // }
+    // check metadata account
+    check_metadata_account(accounts.mint, accounts.metadata_account_info)?;
+
+    // parse metadata
+    let metadata =
+        mpl_token_metadata::state::Metadata::from_account_info(accounts.metadata_account_info)?;
+    // get creator from metadata
+    let creators = metadata.data.creators.unwrap();
+    let creator = creators.first().unwrap();
+    let creator_address = creator.address;
+
+    if !creator.verified {
+        return Err(ContractError::UnverifiedAddress.into());
+    }
+
+    // validate creator
+    if creator_address != *program_id {
+        return Err(ContractError::WrongCreatorAddress.into());
+    }
 
     // find Vault PDA address
     let (vault, _vault_bump) = Pubkey::find_program_address(&[VAULT], program_id);
@@ -122,8 +120,8 @@ pub struct Accounts<'a, 'b> {
     pub token_assoc: &'a AccountInfo<'b>,
     /// Stake data PDA
     pub stake_data_info: &'a AccountInfo<'b>,
-    /// platform's nft PDA
-    pub nft_pda_info: &'a AccountInfo<'b>,
+    /// Metadata account
+    pub metadata_account_info: &'a AccountInfo<'b>,
 }
 
 impl<'a, 'b> Accounts<'a, 'b> {
@@ -142,7 +140,7 @@ impl<'a, 'b> Accounts<'a, 'b> {
             rent_info: next_account_info(acc_iter)?,
             token_assoc: next_account_info(acc_iter)?,
             stake_data_info: next_account_info(acc_iter)?,
-            nft_pda_info: next_account_info(acc_iter)?,
+            metadata_account_info: next_account_info(acc_iter)?
         })
     }
 }

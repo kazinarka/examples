@@ -19,7 +19,7 @@ pub fn generate_vault(matches: &ArgMatches) {
 
     // choose url of solana cluster
     let url = match matches.value_of("env") {
-        Some("dev") => "https://api.testnet.solana.com",
+        Some("dev") => "https://api.devnet.solana.com",
         _ => "https://api.mainnet-beta.solana.com",
     };
     // get client
