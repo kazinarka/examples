@@ -11,3 +11,5 @@ Cargo.lock
 
 /dist/
 !/anchor-vrf/Cargo.lock
+
+/.idea/
