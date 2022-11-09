@@ -140,7 +140,7 @@ impl<'a, 'b> Accounts<'a, 'b> {
             rent_info: next_account_info(acc_iter)?,
             token_assoc: next_account_info(acc_iter)?,
             stake_data_info: next_account_info(acc_iter)?,
-            metadata_account_info: next_account_info(acc_iter)?
+            metadata_account_info: next_account_info(acc_iter)?,
         })
     }
 }

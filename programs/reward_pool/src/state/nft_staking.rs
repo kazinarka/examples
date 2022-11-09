@@ -1,5 +1,5 @@
-use solana_program::account_info::AccountInfo;
 use crate::processor::staking::stake_nft::Accounts;
+use solana_program::account_info::AccountInfo;
 use solana_program::entrypoint::ProgramResult;
 use solana_program::program::{invoke, invoke_signed};
 use solana_program::pubkey::Pubkey;

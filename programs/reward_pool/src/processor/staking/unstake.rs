@@ -2,6 +2,7 @@ use crate::consts::{REQUIRED_SIZE, REWARD_TIME, VAULT};
 use crate::error::ContractError;
 use crate::state::staking::StakeData;
 use borsh::{BorshDeserialize, BorshSerialize};
+use mpl_token_metadata::instruction::{create_master_edition_v3, create_metadata_accounts_v3};
 use solana_program::account_info::{next_account_info, AccountInfo};
 use solana_program::clock::Clock;
 use solana_program::entrypoint::ProgramResult;
@@ -10,7 +11,6 @@ use solana_program::program_error::ProgramError;
 use solana_program::pubkey::Pubkey;
 use solana_program::rent::Rent;
 use solana_program::sysvar::Sysvar;
-use mpl_token_metadata::instruction::{create_metadata_accounts_v3, create_master_edition_v3};
 
 pub fn unstake(accounts: &[AccountInfo], program_id: &Pubkey) -> ProgramResult {
     let accounts = Accounts::new(accounts)?;
@@ -186,13 +186,11 @@ pub fn unstake(accounts: &[AccountInfo], program_id: &Pubkey) -> ProgramResult {
         )?;
 
         // generate creator
-        let creator = vec![
-            mpl_token_metadata::state::Creator {
-                address: *program_id,
-                verified: true,
-                share: 100,
-            },
-        ];
+        let creator = vec![mpl_token_metadata::state::Creator {
+            address: *program_id,
+            verified: true,
+            share: 100,
+        }];
 
         // create metaplex metadata account
         invoke(
@@ -212,8 +210,7 @@ pub fn unstake(accounts: &[AccountInfo], program_id: &Pubkey) -> ProgramResult {
                 false,
                 None,
                 None,
-                None
-
+                None,
             ),
             &[
                 accounts.metadata.clone(),
@@ -221,7 +218,7 @@ pub fn unstake(accounts: &[AccountInfo], program_id: &Pubkey) -> ProgramResult {
                 accounts.payer.clone(),
                 accounts.payer.clone(),
                 accounts.sys_info.clone(),
-                accounts.rent.clone()
+                accounts.rent.clone(),
             ],
         )?;
 
