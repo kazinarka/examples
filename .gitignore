@@ -11,3 +11,5 @@ test-ledger
 Cargo.lock
 
 yarn.lock
+
+/.idea/
